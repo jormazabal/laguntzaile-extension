@@ -19,22 +19,22 @@ const LANGUAGE_NAMES = {
  */
 const FALLBACK_MESSAGES = {
   es: {
-    noTextFound: 'No se ha detectado texto educativo en la pantalla visible.',
-    noContentFound: 'No se detecta un ejercicio o contenido educativo claro en la pantalla visible.',
-    noContentShort: 'No se detecta contenido educativo en la pantalla.',
-    incompleteInfo: 'No se ve completo el enunciado...'
+    noTextFound: 'No se ha detectado texto legible en la pantalla visible.',
+    noContentFound: 'No se detecta contenido claro que explicar en la pantalla visible.',
+    noContentShort: 'No se detecta contenido claro en la pantalla.',
+    incompleteInfo: 'No se ve toda la información completa...'
   },
   en: {
-    noTextFound: 'No educational text was detected on the visible screen.',
-    noContentFound: 'No clear exercise or educational content detected on the visible screen.',
-    noContentShort: 'No educational content detected on screen.',
-    incompleteInfo: 'The full instructions are not visible...'
+    noTextFound: 'No readable text was detected on the visible screen.',
+    noContentFound: 'No clear content to explain was detected on the visible screen.',
+    noContentShort: 'No clear content detected on screen.',
+    incompleteInfo: 'Not all information is fully visible...'
   },
   eu: {
-    noTextFound: 'Ez da testu hezitzailerik detektatu pantailan.',
-    noContentFound: 'Ez da ariketa edo eduki hezitzaile argirik detektatu pantailan.',
-    noContentShort: 'Ez da eduki hezitzailerik detektatu.',
-    incompleteInfo: 'Enuntziatua ez da guztiz ikusten...'
+    noTextFound: 'Ez da testu irakurgarririk detektatu pantailan.',
+    noContentFound: 'Ez da azaltzeko eduki argirik detektatu pantailan.',
+    noContentShort: 'Ez da eduki argirik detektatu.',
+    incompleteInfo: 'Informazio guztia ez da guztiz ikusten...'
   }
 };
 
@@ -139,17 +139,25 @@ export function getExplainPrompt(lang = 'es') {
   const fallback = FALLBACK_MESSAGES[lang] || FALLBACK_MESSAGES.es;
   
   if (lang === 'en') {
-    return `You are a patient tutor explaining exercises to 12-year-old students with learning difficulties (dyslexia, language impairment). Analyze this screenshot of an educational webpage.
+    return `You are a patient helper for 12-year-old students with learning difficulties (dyslexia, language impairment). Analyze this screenshot.
 
 **CRITICAL: ALL your output text MUST be written in ENGLISH. Do NOT write in Spanish or any other language.**
 
-TASK: Explain the exercise or visible content in a clear and simple way.
+TASK: Understand the CONTEXT of what's on screen and explain it in a clear, simple way.
+
+CONTEXT AWARENESS:
+- If it's an EXERCISE or PROBLEM: explain what it asks and how to approach it.
+- If it's an ARTICLE or TEXT: summarize the main idea simply.
+- If it's a FORM or APPLICATION: explain what it's for and what to fill in.
+- If it's a VIDEO or IMAGE: describe what you see and its purpose.
+- If it's a WEBSITE or APP: explain what it does and how to use it.
+- Adapt your explanation to whatever content is visible.
 
 RULES:
-1. Identify the main exercise, problem, or educational content (ignore menus, ads, browser UI).
+1. First, identify WHAT TYPE of content is on screen, then explain accordingly.
 2. Generate a CLEAR and SIMPLE explanation (4-10 sentences maximum).
 3. AVOID technical words. Use language a 12-year-old can easily understand.
-4. If there are steps to follow, list them (maximum 3-6 short steps).
+4. If there are steps or actions to take, list them (maximum 3-6 short steps).
 5. DO NOT invent data that is not visible. If information is missing, say: "${fallback.incompleteInfo}"
 6. The read-aloud version should be shorter (max 900 characters).
 7. **WRITE EVERYTHING IN ENGLISH** - even if the screenshot shows content in another language, your explanation must be in English.
@@ -160,29 +168,29 @@ RESPOND ONLY with this exact JSON (no markdown, no explanations):
   "language": "en",
   "explanation": "[Your explanation IN ENGLISH here]",
   "short_read_aloud": "[Shorter version IN ENGLISH here]"
-}
-
-If no educational content is visible:
-{
-  "mode": "explain",
-  "language": "en",
-  "explanation": "${fallback.noContentFound}",
-  "short_read_aloud": "${fallback.noContentShort}"
 }`;
   }
   
   if (lang === 'eu') {
-    return `Tutore pazientea zara, ariketak azaltzen 12 urteko ikasleei ikaskuntza-zailtasunekin (dislexia, hizkuntza-nahasmendua). Aztertu hezkuntza-webgune baten pantaila-argazki hau.
+    return `Laguntzaile pazientsua zara 12 urteko ikasleentzat ikaskuntza-zailtasunekin (dislexia, hizkuntza-nahasmendua). Aztertu pantaila-argazki hau.
 
 **GARRANTZITSUA: Zure erantzun GUZTIA EUSKARAZ idatzi behar duzu. EZ idatzi gaztelaniaz edo beste hizkuntza batean.**
 
-ZEREGINA: Azaldu ariketa edo ikusgai dagoen edukia modu argi eta sinplean.
+ZEREGINA: Ulertu pantailan dagoen TESTUINGURUA eta azaldu modu argi eta sinplean.
+
+TESTUINGURU KONTZIENTZIA:
+- ARIKETA edo PROBLEMA bada: azaldu zer eskatzen duen eta nola egin.
+- ARTIKULU edo TESTU bada: laburbildu ideia nagusia modu sinplean.
+- FORMULARIO edo APLIKAZIO bada: azaldu zertarako den eta zer bete behar den.
+- BIDEO edo IRUDI bada: deskribatu zer ikusten duzun eta zertarako den.
+- WEBGUNE edo APP bada: azaldu zer egiten duen eta nola erabili.
+- Egokitu zure azalpena ikusgai dagoen edukira.
 
 ARAUAK:
-1. Identifikatu ariketa, problema edo hezkuntza-eduki nagusia (ez ikusi menuak, iragarkiak, nabigatzailearen UI).
+1. Lehenik, identifikatu ZER MOTA eduki dagoen pantailan, gero azaldu horren arabera.
 2. Sortu azalpen ARGI eta SINPLE bat (4-10 esaldi gehienez).
 3. SAIHESTU hitz teknikoak. Erabili 12 urteko batek erraz uler dezakeen hizkuntza.
-4. Jarraitu beharreko urratsak badaude, zerrendatu (gehienez 3-6 urrats labur).
+4. Urratsak edo ekintzak badaude, zerrendatu (gehienez 3-6 urrats labur).
 5. EZ asmatu ikusgai ez dauden datuak. Informazioa falta bada, esan: "${fallback.incompleteInfo}"
 6. Ozen irakurtzeko bertsioak laburragoa izan behar du (gehienez 900 karaktere).
 7. **DENA EUSKARAZ IDATZI** - pantaila-argazkiak beste hizkuntza batean edukia erakusten badu ere, zure azalpena euskaraz izan behar da.
@@ -193,29 +201,29 @@ ERANTZUN BAKARRIK JSON honekin (ez markdown, ez azalpenik):
   "language": "eu",
   "explanation": "[Zure azalpena EUSKARAZ hemen]",
   "short_read_aloud": "[Bertsio laburragoa EUSKARAZ hemen]"
-}
-
-Hezkuntza-edukirik ikusgai ez badago:
-{
-  "mode": "explain",
-  "language": "eu",
-  "explanation": "${fallback.noContentFound}",
-  "short_read_aloud": "${fallback.noContentShort}"
 }`;
   }
   
   // Default: Spanish
-  return `Eres un tutor paciente que explica ejercicios a estudiantes de 12 años con dificultades de aprendizaje (dislexia, TEL). Analiza esta captura de pantalla de una página web educativa.
+  return `Eres un ayudante paciente para estudiantes de 12 años con dificultades de aprendizaje (dislexia, TEL). Analiza esta captura de pantalla.
 
 **IMPORTANTE: Toda tu respuesta DEBE estar escrita en ESPAÑOL.**
 
-TAREA: Explicar el ejercicio o contenido visible de forma clara y sencilla.
+TAREA: Entender el CONTEXTO de lo que hay en pantalla y explicarlo de forma clara y sencilla.
+
+CONCIENCIA DEL CONTEXTO:
+- Si es un EJERCICIO o PROBLEMA: explica qué pide y cómo abordarlo.
+- Si es un ARTÍCULO o TEXTO: resume la idea principal de forma simple.
+- Si es un FORMULARIO o APLICACIÓN: explica para qué sirve y qué hay que rellenar.
+- Si es un VÍDEO o IMAGEN: describe qué se ve y para qué sirve.
+- Si es una WEB o APP: explica qué hace y cómo usarla.
+- Adapta tu explicación al contenido que sea visible.
 
 REGLAS:
-1. Identifica el ejercicio, problema o contenido principal (ignora menús, publicidad, UI del navegador).
+1. Primero, identifica QUÉ TIPO de contenido hay en pantalla, luego explica en consecuencia.
 2. Genera una explicación CLARA y SENCILLA (4-10 frases máximo).
 3. EVITA tecnicismos. Usa lenguaje que un niño de 12 años pueda entender fácilmente.
-4. Si hay pasos a seguir, enuméralos (máximo 3-6 pasos cortos).
+4. Si hay pasos o acciones a realizar, enuméralos (máximo 3-6 pasos cortos).
 5. NO inventes datos que no estén visibles. Si falta información, menciona: "${fallback.incompleteInfo}"
 6. La versión para leer en voz alta debe ser más breve (máx 900 caracteres).
 7. **ESCRIBE TODO EN ESPAÑOL** - aunque la captura muestre contenido en otro idioma, tu explicación debe ser en español.
@@ -226,14 +234,6 @@ RESPONDE ÚNICAMENTE con este JSON exacto (sin markdown, sin explicaciones):
   "language": "es",
   "explanation": "[Tu explicación EN ESPAÑOL aquí]",
   "short_read_aloud": "[Versión corta EN ESPAÑOL aquí]"
-}
-
-Si no hay contenido educativo visible:
-{
-  "mode": "explain",
-  "language": "es",
-  "explanation": "${fallback.noContentFound}",
-  "short_read_aloud": "${fallback.noContentShort}"
 }`;
 }
 
@@ -251,7 +251,6 @@ La respuesta debe empezar con { y terminar con }. Sin explicaciones antes ni des
  * @returns {string} The prompt text
  */
 export function getPromptForMode(mode, lang = 'es') {
-  console.log('[Laguntzaile Prompts] getPromptForMode called with mode:', mode, 'lang:', lang);
   if (mode === 'read') {
     return getReadPrompt(lang);
   } else if (mode === 'explain') {
