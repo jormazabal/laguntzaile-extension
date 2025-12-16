@@ -49,10 +49,7 @@
         <div class="form-group">
           <label for="vision-model">Modelo de Análisis (Visión + Texto)</label>
           <select id="vision-model" class="select-input">
-            <option value="gpt-4o-mini">GPT-4o Mini</option>
-            <option value="gpt-4.5-preview">GPT-4.5 Preview</option>
-            <option value="o3-mini">o3-mini (Razonador)</option>
-            <option value="o4-mini">o4-mini (Razonador)</option>
+            <!-- Populated dynamically from storage.js -->
           </select>
           <p class="help-text">
             Modelo usado para analizar la imagen y generar el texto.
@@ -62,21 +59,17 @@
         <div class="form-group" id="reasoning-group" style="display: none;">
           <label for="reasoning-effort">Nivel de Razonamiento</label>
           <select id="reasoning-effort" class="select-input">
-            <option value="low">Bajo - Más rápido</option>
-            <option value="medium">Medio - Equilibrado</option>
-            <option value="high">Alto - Más preciso</option>
+            <!-- Populated dynamically from storage.js -->
           </select>
           <p class="help-text">
-            Solo para modelos razonadores (o3-mini, o4-mini). Mayor nivel = más tiempo pero mejor análisis.
+            Solo para modelos razonadores. Mayor nivel = más tiempo pero mejor análisis.
           </p>
         </div>
 
         <div class="form-group">
           <label for="tts-model">Modelo de Voz (TTS)</label>
           <select id="tts-model" class="select-input">
-            <option value="gpt-4o-mini-tts">GPT-4o Mini TTS</option>
-            <option value="tts-1">TTS-1</option>
-            <option value="tts-1-hd">TTS-1 HD</option>
+            <!-- Populated dynamically from storage.js -->
           </select>
           <p class="help-text">
             Modelo usado para convertir texto a voz. TTS-1 HD ofrece mayor calidad.
@@ -128,6 +121,6 @@
     </footer>
   </div>
 
-  <script src="options.js"></script>
+  <script type="module" src="options.js"></script>
 </body>
 </html>

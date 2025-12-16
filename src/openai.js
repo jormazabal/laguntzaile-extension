@@ -4,6 +4,7 @@
  */
 
 import { JSON_FIX_PROMPT } from './vision_prompts.js';
+import { AVAILABLE_MODELS } from './storage.js';
 
 // Default models (fallbacks)
 const DEFAULT_VISION_MODEL = 'gpt-4o-mini';
@@ -11,8 +12,13 @@ const DEFAULT_TTS_MODEL = 'gpt-4o-mini-tts';
 const DEFAULT_TTS_VOICE = 'coral';
 const REQUEST_TIMEOUT = 60000; // 60 seconds
 
-// Reasoning models that support reasoning_effort parameter
-const REASONING_MODELS = ['o3-mini', 'o4-mini'];
+/**
+ * Check if a model supports reasoning
+ */
+function isReasoningModel(modelId) {
+  const model = AVAILABLE_MODELS.vision.find(m => m.id === modelId);
+  return model?.supportsReasoning || false;
+}
 
 /**
  * Call OpenAI Responses API with vision
@@ -25,7 +31,7 @@ const REASONING_MODELS = ['o3-mini', 'o4-mini'];
 export async function analyzeScreenshot(apiKey, prompt, imageDataUrl, modelSettings = {}) {
   const visionModel = modelSettings.vision || DEFAULT_VISION_MODEL;
   const reasoningEffort = modelSettings.reasoningEffort || 'medium';
-  const isReasoningModel = REASONING_MODELS.includes(visionModel);
+  const supportsReasoning = isReasoningModel(visionModel);
   
   console.log(`[Laguntzaile] Calling OpenAI vision API with model: ${visionModel}`);
   
@@ -52,7 +58,7 @@ export async function analyzeScreenshot(apiKey, prompt, imageDataUrl, modelSetti
   };
   
   // Add reasoning_effort for reasoning models
-  if (isReasoningModel) {
+  if (supportsReasoning) {
     requestBody.reasoning = { effort: reasoningEffort };
     console.log(`[Laguntzaile] Using reasoning effort: ${reasoningEffort}`);
   }

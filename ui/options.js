@@ -3,11 +3,10 @@
  * Handles API key and model configuration
  */
 
+import { AVAILABLE_MODELS } from '../src/storage.js';
+
 const STORAGE_KEY = 'laguntzaile_apikey';
 const MODELS_KEY = 'laguntzaile_models';
-
-// Reasoning models list
-const REASONING_MODELS = ['o3-mini', 'o4-mini'];
 
 // DOM elements
 const apiKeyInput = document.getElementById('api-key');
@@ -29,6 +28,9 @@ let isPasswordVisible = false;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
+  // Populate model selects from configuration
+  populateModelSelects();
+  
   // Load existing settings
   await loadApiKey();
   await loadModelSettings();
@@ -47,6 +49,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   visionModelSelect.addEventListener('change', onVisionModelChange);
   btnSaveModels.addEventListener('click', saveModelSettings);
 });
+
+/**
+ * Populate model select elements from AVAILABLE_MODELS configuration
+ */
+function populateModelSelects() {
+  // Vision models
+  AVAILABLE_MODELS.vision.forEach(model => {
+    const option = document.createElement('option');
+    option.value = model.id;
+    option.textContent = model.name;
+    visionModelSelect.appendChild(option);
+  });
+
+  // TTS models
+  AVAILABLE_MODELS.tts.forEach(model => {
+    const option = document.createElement('option');
+    option.value = model.id;
+    option.textContent = model.name;
+    ttsModelSelect.appendChild(option);
+  });
+
+  // Reasoning effort levels
+  AVAILABLE_MODELS.reasoningEffort.forEach(level => {
+    const option = document.createElement('option');
+    option.value = level.id;
+    option.textContent = level.name;
+    reasoningEffortSelect.appendChild(option);
+  });
+}
 
 /**
  * Load existing API key from storage
@@ -189,6 +220,7 @@ async function saveModelSettings() {
  */
 function onVisionModelChange() {
   const selectedModel = visionModelSelect.value;
-  const isReasoningModel = REASONING_MODELS.includes(selectedModel);
+  const modelConfig = AVAILABLE_MODELS.vision.find(m => m.id === selectedModel);
+  const isReasoningModel = modelConfig?.supportsReasoning || false;
   reasoningGroup.style.display = isReasoningModel ? 'block' : 'none';
 }
