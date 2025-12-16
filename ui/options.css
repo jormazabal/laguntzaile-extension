@@ -119,6 +119,28 @@ body {
   text-decoration: underline;
 }
 
+/* Select inputs */
+.select-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.select-input:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.1);
+}
+
+.select-input:hover {
+  border-color: #bbb;
+}
+
 /* Buttons */
 .button-group {
   display: flex;

@@ -1,9 +1,42 @@
 /**
  * Storage utilities for Laguntzaile extension
- * Handles API key storage using chrome.storage.local
+ * Handles API key and model settings storage using chrome.storage.local
  */
 
 const STORAGE_KEY = 'laguntzaile_apikey';
+const MODELS_KEY = 'laguntzaile_models';
+
+/**
+ * Default model settings
+ */
+const DEFAULT_MODELS = {
+  vision: 'gpt-4o-mini',
+  tts: 'gpt-4o-mini-tts',
+  ttsVoice: 'coral',
+  reasoningEffort: 'medium'  // low, medium, high (for reasoning models)
+};
+
+/**
+ * Available models configuration
+ */
+export const AVAILABLE_MODELS = {
+  vision: [
+    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', supportsReasoning: false },
+    { id: 'gpt-4.5-preview', name: 'GPT-4.5 Preview', supportsReasoning: false },
+    { id: 'o3-mini', name: 'o3-mini (Razonador)', supportsReasoning: true },
+    { id: 'o4-mini', name: 'o4-mini (Razonador)', supportsReasoning: true }
+  ],
+  tts: [
+    { id: 'gpt-4o-mini-tts', name: 'GPT-4o Mini TTS' },
+    { id: 'tts-1', name: 'TTS-1' },
+    { id: 'tts-1-hd', name: 'TTS-1 HD' }
+  ],
+  reasoningEffort: [
+    { id: 'low', name: 'Bajo' },
+    { id: 'medium', name: 'Medio' },
+    { id: 'high', name: 'Alto' }
+  ]
+};
 
 /**
  * Get the stored OpenAI API key
@@ -57,4 +90,46 @@ export async function removeApiKey() {
 export async function hasApiKey() {
   const key = await getApiKey();
   return key !== null && key.trim().length > 0;
+}
+
+/**
+ * Get model settings
+ * @returns {Promise<object>} Model settings with defaults applied
+ */
+export async function getModelSettings() {
+  try {
+    const result = await chrome.storage.local.get(MODELS_KEY);
+    return { ...DEFAULT_MODELS, ...result[MODELS_KEY] };
+  } catch (error) {
+    console.error('[Laguntzaile] Error getting model settings:', error);
+    return DEFAULT_MODELS;
+  }
+}
+
+/**
+ * Save model settings
+ * @param {object} settings - Model settings to save
+ * @returns {Promise<boolean>} True if saved successfully
+ */
+export async function setModelSettings(settings) {
+  try {
+    const current = await getModelSettings();
+    const updated = { ...current, ...settings };
+    await chrome.storage.local.set({ [MODELS_KEY]: updated });
+    console.log('[Laguntzaile] Model settings saved:', updated);
+    return true;
+  } catch (error) {
+    console.error('[Laguntzaile] Error saving model settings:', error);
+    return false;
+  }
+}
+
+/**
+ * Check if a vision model supports reasoning
+ * @param {string} modelId - Model ID to check
+ * @returns {boolean} True if model supports reasoning
+ */
+export function modelSupportsReasoning(modelId) {
+  const model = AVAILABLE_MODELS.vision.find(m => m.id === modelId);
+  return model?.supportsReasoning || false;
 }

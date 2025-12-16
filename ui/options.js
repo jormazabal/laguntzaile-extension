@@ -1,9 +1,13 @@
 /**
  * Options page script for Laguntzaile extension
- * Handles API key configuration
+ * Handles API key and model configuration
  */
 
 const STORAGE_KEY = 'laguntzaile_apikey';
+const MODELS_KEY = 'laguntzaile_models';
+
+// Reasoning models list
+const REASONING_MODELS = ['o3-mini', 'o4-mini'];
 
 // DOM elements
 const apiKeyInput = document.getElementById('api-key');
@@ -12,15 +16,24 @@ const btnSave = document.getElementById('btn-save');
 const btnClear = document.getElementById('btn-clear');
 const messageEl = document.getElementById('message');
 
+// Model DOM elements
+const visionModelSelect = document.getElementById('vision-model');
+const reasoningGroup = document.getElementById('reasoning-group');
+const reasoningEffortSelect = document.getElementById('reasoning-effort');
+const ttsModelSelect = document.getElementById('tts-model');
+const btnSaveModels = document.getElementById('btn-save-models');
+const modelsMessageEl = document.getElementById('models-message');
+
 // State
 let isPasswordVisible = false;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-  // Load existing API key
+  // Load existing settings
   await loadApiKey();
+  await loadModelSettings();
 
-  // Event listeners
+  // API Key event listeners
   toggleVisibility.addEventListener('click', togglePasswordVisibility);
   btnSave.addEventListener('click', saveApiKey);
   btnClear.addEventListener('click', clearApiKey);
@@ -29,6 +42,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       saveApiKey();
     }
   });
+
+  // Model event listeners
+  visionModelSelect.addEventListener('change', onVisionModelChange);
+  btnSaveModels.addEventListener('click', saveModelSettings);
 });
 
 /**
@@ -104,15 +121,74 @@ function togglePasswordVisibility() {
  * Show message to user
  * @param {string} text - Message text
  * @param {string} type - 'success' or 'error'
+ * @param {HTMLElement} element - Message element to use
  */
-function showMessage(text, type) {
-  messageEl.textContent = text;
-  messageEl.className = `message ${type}`;
+function showMessage(text, type, element = messageEl) {
+  element.textContent = text;
+  element.className = `message ${type}`;
   
   // Auto-hide success messages
   if (type === 'success') {
     setTimeout(() => {
-      messageEl.classList.add('hidden');
+      element.classList.add('hidden');
     }, 3000);
   }
+}
+
+/**
+ * Load model settings from storage
+ */
+async function loadModelSettings() {
+  try {
+    const result = await chrome.storage.local.get(MODELS_KEY);
+    const settings = result[MODELS_KEY] || {};
+    
+    // Set vision model
+    if (settings.vision) {
+      visionModelSelect.value = settings.vision;
+    }
+    
+    // Set TTS model
+    if (settings.tts) {
+      ttsModelSelect.value = settings.tts;
+    }
+    
+    // Set reasoning effort
+    if (settings.reasoningEffort) {
+      reasoningEffortSelect.value = settings.reasoningEffort;
+    }
+    
+    // Show/hide reasoning options based on model
+    onVisionModelChange();
+  } catch (error) {
+    console.error('[Laguntzaile Options] Error loading model settings:', error);
+  }
+}
+
+/**
+ * Save model settings to storage
+ */
+async function saveModelSettings() {
+  const settings = {
+    vision: visionModelSelect.value,
+    tts: ttsModelSelect.value,
+    reasoningEffort: reasoningEffortSelect.value
+  };
+
+  try {
+    await chrome.storage.local.set({ [MODELS_KEY]: settings });
+    showMessage('Modelos guardados correctamente', 'success', modelsMessageEl);
+  } catch (error) {
+    console.error('[Laguntzaile Options] Error saving model settings:', error);
+    showMessage('Error al guardar los modelos', 'error', modelsMessageEl);
+  }
+}
+
+/**
+ * Handle vision model change - show/hide reasoning options
+ */
+function onVisionModelChange() {
+  const selectedModel = visionModelSelect.value;
+  const isReasoningModel = REASONING_MODELS.includes(selectedModel);
+  reasoningGroup.style.display = isReasoningModel ? 'block' : 'none';
 }

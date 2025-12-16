@@ -3,7 +3,7 @@
  * Handles message routing, screenshot capture, and API orchestration
  */
 
-import { getApiKey } from './storage.js';
+import { getApiKey, getModelSettings } from './storage.js';
 import { analyzeScreenshot, generateTTS } from './openai.js';
 import { getPromptForMode } from './vision_prompts.js';
 import { playAudioInOffscreen, stopAudio } from './offscreen.js';
@@ -63,6 +63,10 @@ async function handleAnalyzeRequest(mode, language = 'es') {
     };
   }
 
+  // Step 1b: Load model settings
+  const modelSettings = await getModelSettings();
+  console.log('[Laguntzaile] Using models:', modelSettings.vision, modelSettings.tts);
+
   // Step 2: Capture screenshot
   console.log('[Laguntzaile] Capturing screenshot...');
   let screenshotDataUrl;
@@ -82,7 +86,7 @@ async function handleAnalyzeRequest(mode, language = 'es') {
   const prompt = getPromptForMode(mode, language);
   let analysisResult;
   try {
-    analysisResult = await analyzeScreenshot(apiKey, prompt, screenshotDataUrl);
+    analysisResult = await analyzeScreenshot(apiKey, prompt, screenshotDataUrl, modelSettings);
     console.log('[Laguntzaile] Analysis result:', analysisResult);
   } catch (error) {
     console.error('[Laguntzaile] Vision analysis failed:', error);
@@ -116,7 +120,7 @@ async function handleAnalyzeRequest(mode, language = 'es') {
   console.log('[Laguntzaile] Generating TTS for text length:', textForTTS.length);
   let audioData;
   try {
-    audioData = await generateTTS(apiKey, textForTTS);
+    audioData = await generateTTS(apiKey, textForTTS, modelSettings);
     console.log('[Laguntzaile] TTS audio generated, size:', audioData.byteLength);
   } catch (error) {
     console.error('[Laguntzaile] TTS generation failed:', error);

@@ -5,20 +5,57 @@
 
 import { JSON_FIX_PROMPT } from './vision_prompts.js';
 
-const VISION_MODEL = 'gpt-4o-mini';
-const TTS_MODEL = 'gpt-4o-mini-tts';
-const TTS_VOICE = 'coral';
+// Default models (fallbacks)
+const DEFAULT_VISION_MODEL = 'gpt-4o-mini';
+const DEFAULT_TTS_MODEL = 'gpt-4o-mini-tts';
+const DEFAULT_TTS_VOICE = 'coral';
 const REQUEST_TIMEOUT = 60000; // 60 seconds
+
+// Reasoning models that support reasoning_effort parameter
+const REASONING_MODELS = ['o3-mini', 'o4-mini'];
 
 /**
  * Call OpenAI Responses API with vision
  * @param {string} apiKey - OpenAI API key
  * @param {string} prompt - System prompt for the task
  * @param {string} imageDataUrl - Base64 data URL of the screenshot
+ * @param {object} modelSettings - Model configuration {vision, reasoningEffort}
  * @returns {Promise<object>} Parsed JSON response
  */
-export async function analyzeScreenshot(apiKey, prompt, imageDataUrl) {
-  console.log('[Laguntzaile] Calling OpenAI vision API...');
+export async function analyzeScreenshot(apiKey, prompt, imageDataUrl, modelSettings = {}) {
+  const visionModel = modelSettings.vision || DEFAULT_VISION_MODEL;
+  const reasoningEffort = modelSettings.reasoningEffort || 'medium';
+  const isReasoningModel = REASONING_MODELS.includes(visionModel);
+  
+  console.log(`[Laguntzaile] Calling OpenAI vision API with model: ${visionModel}`);
+  
+  // Build request body
+  const requestBody = {
+    model: visionModel,
+    store: false,
+    input: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'input_text',
+            text: prompt
+          },
+          {
+            type: 'input_image',
+            image_url: imageDataUrl,
+            detail: 'high'
+          }
+        ]
+      }
+    ]
+  };
+  
+  // Add reasoning_effort for reasoning models
+  if (isReasoningModel) {
+    requestBody.reasoning = { effort: reasoningEffort };
+    console.log(`[Laguntzaile] Using reasoning effort: ${reasoningEffort}`);
+  }
   
   const response = await fetchWithTimeout('https://api.openai.com/v1/responses', {
     method: 'POST',
@@ -26,26 +63,7 @@ export async function analyzeScreenshot(apiKey, prompt, imageDataUrl) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`
     },
-    body: JSON.stringify({
-      model: VISION_MODEL,
-      store: false,
-      input: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'input_text',
-              text: prompt
-            },
-            {
-              type: 'input_image',
-              image_url: imageDataUrl,
-              detail: 'high'
-            }
-          ]
-        }
-      ]
-    })
+    body: JSON.stringify(requestBody)
   }, REQUEST_TIMEOUT);
 
   if (!response.ok) {
@@ -66,7 +84,7 @@ export async function analyzeScreenshot(apiKey, prompt, imageDataUrl) {
   // If parsing failed, retry with fix prompt
   if (parsed === null) {
     console.log('[Laguntzaile] JSON parse failed, retrying with fix prompt...');
-    parsed = await retryWithJsonFix(apiKey, prompt, imageDataUrl, outputText);
+    parsed = await retryWithJsonFix(apiKey, prompt, imageDataUrl, outputText, modelSettings);
   }
   
   return parsed;
@@ -75,7 +93,9 @@ export async function analyzeScreenshot(apiKey, prompt, imageDataUrl) {
 /**
  * Retry the vision call asking for valid JSON
  */
-async function retryWithJsonFix(apiKey, originalPrompt, imageDataUrl, previousOutput) {
+async function retryWithJsonFix(apiKey, originalPrompt, imageDataUrl, previousOutput, modelSettings = {}) {
+  const visionModel = modelSettings.vision || DEFAULT_VISION_MODEL;
+  
   const response = await fetchWithTimeout('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -83,7 +103,7 @@ async function retryWithJsonFix(apiKey, originalPrompt, imageDataUrl, previousOu
       'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model: VISION_MODEL,
+      model: visionModel,
       store: false,
       input: [
         {
@@ -200,10 +220,14 @@ function tryParseJSON(text) {
  * Generate TTS audio using OpenAI
  * @param {string} apiKey - OpenAI API key
  * @param {string} text - Text to convert to speech
+ * @param {object} modelSettings - Model configuration {tts, ttsVoice}
  * @returns {Promise<ArrayBuffer>} MP3 audio data
  */
-export async function generateTTS(apiKey, text) {
-  console.log('[Laguntzaile] Calling OpenAI TTS API...');
+export async function generateTTS(apiKey, text, modelSettings = {}) {
+  const ttsModel = modelSettings.tts || DEFAULT_TTS_MODEL;
+  const ttsVoice = modelSettings.ttsVoice || DEFAULT_TTS_VOICE;
+  
+  console.log(`[Laguntzaile] Calling OpenAI TTS API with model: ${ttsModel}`);
   
   const response = await fetchWithTimeout('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
@@ -212,8 +236,8 @@ export async function generateTTS(apiKey, text) {
       'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model: TTS_MODEL,
-      voice: TTS_VOICE,
+      model: ttsModel,
+      voice: ttsVoice,
       input: text,
       response_format: 'mp3'
     })
