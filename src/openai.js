@@ -1,0 +1,280 @@
+/**
+ * OpenAI API integration for Laguntzaile extension
+ * Handles vision analysis and TTS generation
+ */
+
+import { JSON_FIX_PROMPT } from './vision_prompts.js';
+
+const VISION_MODEL = 'gpt-4o-mini';
+const TTS_MODEL = 'gpt-4o-mini-tts';
+const TTS_VOICE = 'coral';
+const REQUEST_TIMEOUT = 60000; // 60 seconds
+
+/**
+ * Call OpenAI Responses API with vision
+ * @param {string} apiKey - OpenAI API key
+ * @param {string} prompt - System prompt for the task
+ * @param {string} imageDataUrl - Base64 data URL of the screenshot
+ * @returns {Promise<object>} Parsed JSON response
+ */
+export async function analyzeScreenshot(apiKey, prompt, imageDataUrl) {
+  console.log('[Laguntzaile] Calling OpenAI vision API...');
+  
+  const response = await fetchWithTimeout('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: VISION_MODEL,
+      store: false,
+      input: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'input_text',
+              text: prompt
+            },
+            {
+              type: 'input_image',
+              image_url: imageDataUrl,
+              detail: 'high'
+            }
+          ]
+        }
+      ]
+    })
+  }, REQUEST_TIMEOUT);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[Laguntzaile] Vision API error:', response.status, errorText);
+    throw new OpenAIError(response.status, errorText);
+  }
+
+  const data = await response.json();
+  console.log('[Laguntzaile] Vision API response received');
+  
+  // Extract the text content from the response
+  const outputText = extractResponseText(data);
+  
+  // Try to parse as JSON
+  let parsed = tryParseJSON(outputText);
+  
+  // If parsing failed, retry with fix prompt
+  if (parsed === null) {
+    console.log('[Laguntzaile] JSON parse failed, retrying with fix prompt...');
+    parsed = await retryWithJsonFix(apiKey, prompt, imageDataUrl, outputText);
+  }
+  
+  return parsed;
+}
+
+/**
+ * Retry the vision call asking for valid JSON
+ */
+async function retryWithJsonFix(apiKey, originalPrompt, imageDataUrl, previousOutput) {
+  const response = await fetchWithTimeout('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: VISION_MODEL,
+      store: false,
+      input: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'input_text',
+              text: originalPrompt
+            },
+            {
+              type: 'input_image',
+              image_url: imageDataUrl,
+              detail: 'high'
+            }
+          ]
+        },
+        {
+          role: 'assistant',
+          content: [
+            {
+              type: 'output_text',
+              text: previousOutput
+            }
+          ]
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'input_text',
+              text: JSON_FIX_PROMPT
+            }
+          ]
+        }
+      ]
+    })
+  }, REQUEST_TIMEOUT);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new OpenAIError(response.status, errorText);
+  }
+
+  const data = await response.json();
+  const outputText = extractResponseText(data);
+  const parsed = tryParseJSON(outputText);
+  
+  if (parsed === null) {
+    throw new Error('No se pudo obtener una respuesta JSON válida del modelo después de reintentar.');
+  }
+  
+  return parsed;
+}
+
+/**
+ * Extract text from OpenAI Responses API response
+ */
+function extractResponseText(data) {
+  // The Responses API returns output in a different format
+  if (data.output && Array.isArray(data.output)) {
+    for (const item of data.output) {
+      if (item.type === 'message' && item.content) {
+        for (const content of item.content) {
+          if (content.type === 'output_text' && content.text) {
+            return content.text;
+          }
+        }
+      }
+    }
+  }
+  // Fallback: try to find any text in the response
+  if (data.choices && data.choices[0]?.message?.content) {
+    return data.choices[0].message.content;
+  }
+  console.error('[Laguntzaile] Unexpected response structure:', JSON.stringify(data).substring(0, 500));
+  throw new Error('Estructura de respuesta inesperada de OpenAI');
+}
+
+/**
+ * Try to parse text as JSON, handling common issues
+ */
+function tryParseJSON(text) {
+  if (!text) return null;
+  
+  // Clean up the text
+  let cleaned = text.trim();
+  
+  // Remove markdown code blocks if present
+  if (cleaned.startsWith('```json')) {
+    cleaned = cleaned.slice(7);
+  } else if (cleaned.startsWith('```')) {
+    cleaned = cleaned.slice(3);
+  }
+  if (cleaned.endsWith('```')) {
+    cleaned = cleaned.slice(0, -3);
+  }
+  cleaned = cleaned.trim();
+  
+  // Try to find JSON object in the text
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    cleaned = jsonMatch[0];
+  }
+  
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {
+    console.warn('[Laguntzaile] JSON parse error:', e.message);
+    return null;
+  }
+}
+
+/**
+ * Generate TTS audio using OpenAI
+ * @param {string} apiKey - OpenAI API key
+ * @param {string} text - Text to convert to speech
+ * @returns {Promise<ArrayBuffer>} MP3 audio data
+ */
+export async function generateTTS(apiKey, text) {
+  console.log('[Laguntzaile] Calling OpenAI TTS API...');
+  
+  const response = await fetchWithTimeout('https://api.openai.com/v1/audio/speech', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: TTS_MODEL,
+      voice: TTS_VOICE,
+      input: text,
+      response_format: 'mp3'
+    })
+  }, REQUEST_TIMEOUT);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[Laguntzaile] TTS API error:', response.status, errorText);
+    throw new OpenAIError(response.status, errorText);
+  }
+
+  console.log('[Laguntzaile] TTS audio received');
+  return await response.arrayBuffer();
+}
+
+/**
+ * Fetch with timeout
+ */
+async function fetchWithTimeout(url, options, timeout) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('La solicitud tardó demasiado tiempo. Por favor, inténtalo de nuevo.');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Custom error class for OpenAI API errors
+ */
+export class OpenAIError extends Error {
+  constructor(status, body) {
+    let message;
+    switch (status) {
+      case 401:
+        message = 'API Key inválida. Por favor, verifica tu configuración.';
+        break;
+      case 429:
+        message = 'Límite de uso alcanzado. Por favor, espera un momento e inténtalo de nuevo.';
+        break;
+      case 500:
+      case 502:
+      case 503:
+        message = 'Error del servidor de OpenAI. Por favor, inténtalo de nuevo más tarde.';
+        break;
+      default:
+        message = `Error de OpenAI (${status}): ${body.substring(0, 200)}`;
+    }
+    super(message);
+    this.name = 'OpenAIError';
+    this.status = status;
+  }
+}

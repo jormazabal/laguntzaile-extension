@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laguntzaile</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Laguntzaile</h1>
+    </header>
+
+    <main class="main">
+      <div class="buttons">
+        <button id="btn-read" class="btn btn-primary">
+          <span class="btn-icon">📖</span>
+          Leer
+        </button>
+        <button id="btn-explain" class="btn btn-secondary">
+          <span class="btn-icon">💡</span>
+          Explicar
+        </button>
+      </div>
+
+      <div class="status" id="status">
+        <span class="status-icon">✓</span>
+        <span class="status-text">Listo</span>
+      </div>
+
+      <div class="result-container" id="result-container">
+        <div class="result-text" id="result-text"></div>
+      </div>
+
+      <div class="error-container hidden" id="error-container">
+        <div class="error-message" id="error-message"></div>
+        <button id="btn-config" class="btn btn-small hidden">Configurar API Key</button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p class="privacy-note">
+        ⚠️ Al pulsar "Leer" o "Explicar", se envía una captura de la pestaña actual a OpenAI para su análisis.
+      </p>
+      <p class="tts-note">
+        🔊 La voz es generada por IA (OpenAI TTS).
+      </p>
+      <a href="#" id="link-options" class="options-link">⚙️ Opciones</a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

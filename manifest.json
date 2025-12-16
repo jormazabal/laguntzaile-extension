@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Laguntzaile",
+  "version": "1.0.0",
+  "description": "Asistente personal para leer y explicar ejercicios usando IA de visión y voz.",
+  "minimum_chrome_version": "109",
+  "icons": {
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  "action": {
+    "default_popup": "ui/popup.html",
+    "default_title": "Laguntzaile",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "32": "assets/icon32.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/sw.js",
+    "type": "module"
+  },
+  "options_page": "ui/options.html",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "offscreen"
+  ]
+}
