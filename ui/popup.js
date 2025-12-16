@@ -1,26 +1,43 @@
 /**
  * Popup script for Laguntzaile extension
  * Handles UI interactions and communication with service worker
+ * Target: 12-year-olds with TEL and dyslexia
  */
 
+import { translations, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '../src/i18n.js';
+
+// Storage key for language preference
+const LANG_STORAGE_KEY = 'laguntzaile_lang';
+
 // DOM elements
+const langSelect = document.getElementById('lang-select');
 const btnRead = document.getElementById('btn-read');
 const btnExplain = document.getElementById('btn-explain');
+const btnReadText = document.getElementById('btn-read-text');
+const btnExplainText = document.getElementById('btn-explain-text');
 const statusEl = document.getElementById('status');
 const statusIcon = statusEl.querySelector('.status-icon');
-const statusText = statusEl.querySelector('.status-text');
+const statusTextEl = document.getElementById('status-text');
 const resultContainer = document.getElementById('result-container');
 const resultText = document.getElementById('result-text');
 const errorContainer = document.getElementById('error-container');
 const errorMessage = document.getElementById('error-message');
 const btnConfig = document.getElementById('btn-config');
 const linkOptions = document.getElementById('link-options');
+const privacyNote = document.getElementById('privacy-note');
+const ttsNote = document.getElementById('tts-note');
 
 // State
 let isProcessing = false;
+let currentLang = DEFAULT_LANGUAGE;
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load saved language
+  await loadLanguage();
+  
+  // Event listeners
+  langSelect.addEventListener('change', handleLanguageChange);
   btnRead.addEventListener('click', () => handleAction('READ'));
   btnExplain.addEventListener('click', () => handleAction('EXPLAIN'));
   btnConfig.addEventListener('click', openOptions);
@@ -29,6 +46,71 @@ document.addEventListener('DOMContentLoaded', () => {
     openOptions();
   });
 });
+
+/**
+ * Load saved language preference
+ */
+async function loadLanguage() {
+  try {
+    const result = await chrome.storage.local.get(LANG_STORAGE_KEY);
+    const savedLang = result[LANG_STORAGE_KEY];
+    if (savedLang && SUPPORTED_LANGUAGES.includes(savedLang)) {
+      currentLang = savedLang;
+    }
+  } catch (error) {
+    console.warn('[Laguntzaile Popup] Could not load language:', error);
+  }
+  
+  langSelect.value = currentLang;
+  applyTranslations();
+}
+
+/**
+ * Handle language change
+ */
+async function handleLanguageChange() {
+  currentLang = langSelect.value;
+  
+  // Save preference
+  try {
+    await chrome.storage.local.set({ [LANG_STORAGE_KEY]: currentLang });
+  } catch (error) {
+    console.warn('[Laguntzaile Popup] Could not save language:', error);
+  }
+  
+  applyTranslations();
+}
+
+/**
+ * Apply translations to UI
+ */
+function applyTranslations() {
+  const t = translations[currentLang] || translations[DEFAULT_LANGUAGE];
+  
+  // Update UI texts
+  btnReadText.textContent = t.btnRead;
+  btnExplainText.textContent = t.btnExplain;
+  btnConfig.textContent = t.btnConfigure;
+  linkOptions.textContent = '⚙️ ' + t.linkOptions;
+  privacyNote.textContent = t.privacyNote;
+  ttsNote.textContent = t.ttsNote;
+  
+  // Update status if not processing
+  if (!isProcessing) {
+    statusTextEl.textContent = t.statusReady;
+  }
+  
+  // Update document language
+  document.documentElement.lang = currentLang;
+}
+
+/**
+ * Get translation for current language
+ */
+function t(key) {
+  const langData = translations[currentLang] || translations[DEFAULT_LANGUAGE];
+  return langData[key] || key;
+}
 
 /**
  * Handle READ or EXPLAIN action
@@ -44,40 +126,43 @@ async function handleAction(type) {
 
   try {
     // Step 1: Capturing
-    updateStatus('loading', '📸', 'Capturando pantalla...');
-    await delay(100); // Small delay to show status
+    updateStatus('loading', '📸', t('statusCapturing'));
+    await delay(100);
 
-    // Step 2: Send message to service worker
-    updateStatus('loading', '🔍', 'Analizando con IA...');
+    // Step 2: Send message to service worker with language
+    updateStatus('loading', '🔍', t('statusAnalyzing'));
     
-    const response = await chrome.runtime.sendMessage({ type });
+    const response = await chrome.runtime.sendMessage({ 
+      type,
+      language: currentLang
+    });
     
     if (!response) {
-      throw new Error('No se recibió respuesta del servicio');
+      throw new Error(t('errorUnknown'));
     }
 
     if (!response.success) {
       if (response.needsConfig) {
-        showError(response.error, true);
+        showError(t('errorNoApiKey'), true);
       } else {
-        showError(response.error);
+        showError(response.error || t('errorUnknown'));
       }
-      updateStatus('error', '❌', 'Error');
+      updateStatus('error', '❌', t('statusError'));
       return;
     }
 
     // Step 3: Show result
-    updateStatus('loading', '🔊', 'Reproduciendo audio...');
+    updateStatus('loading', '🔊', t('statusGeneratingAudio'));
     showResult(response.displayText);
     
     // Success
     await delay(500);
-    updateStatus('success', '✓', 'Completado');
+    updateStatus('success', '✓', t('statusDone'));
 
   } catch (error) {
     console.error('[Laguntzaile Popup] Error:', error);
-    showError(error.message || 'Error desconocido');
-    updateStatus('error', '❌', 'Error');
+    showError(error.message || t('errorUnknown'));
+    updateStatus('error', '❌', t('statusError'));
   } finally {
     isProcessing = false;
     setButtonsEnabled(true);
@@ -86,9 +171,6 @@ async function handleAction(type) {
 
 /**
  * Update status display
- * @param {string} state - 'success', 'loading', or 'error'
- * @param {string} icon - Icon to display
- * @param {string} text - Status text
  */
 function updateStatus(state, icon, text) {
   statusEl.className = 'status';
@@ -98,12 +180,11 @@ function updateStatus(state, icon, text) {
     statusEl.classList.add('error');
   }
   statusIcon.textContent = icon;
-  statusText.textContent = text;
+  statusTextEl.textContent = text;
 }
 
 /**
  * Show result text
- * @param {string} text - Result text to display
  */
 function showResult(text) {
   resultText.textContent = text;
@@ -120,8 +201,6 @@ function hideResult() {
 
 /**
  * Show error message
- * @param {string} message - Error message
- * @param {boolean} showConfigButton - Whether to show config button
  */
 function showError(message, showConfigButton = false) {
   errorMessage.textContent = message;
@@ -144,7 +223,6 @@ function hideError() {
 
 /**
  * Enable/disable action buttons
- * @param {boolean} enabled - Whether buttons should be enabled
  */
 function setButtonsEnabled(enabled) {
   btnRead.disabled = !enabled;
@@ -160,7 +238,6 @@ function openOptions() {
 
 /**
  * Delay helper
- * @param {number} ms - Milliseconds to delay
  */
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));

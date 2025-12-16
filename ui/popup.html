@@ -9,24 +9,31 @@
 <body>
   <div class="container">
     <header class="header">
-      <h1>Laguntzaile</h1>
+      <h1 id="app-name">Laguntzaile</h1>
+      <div class="lang-selector">
+        <select id="lang-select" aria-label="Idioma">
+          <option value="es">🇪🇸 ES</option>
+          <option value="en">🇬🇧 EN</option>
+          <option value="eu">EU</option>
+        </select>
+      </div>
     </header>
 
     <main class="main">
       <div class="buttons">
         <button id="btn-read" class="btn btn-primary">
           <span class="btn-icon">📖</span>
-          Leer
+          <span id="btn-read-text">Leer</span>
         </button>
         <button id="btn-explain" class="btn btn-secondary">
           <span class="btn-icon">💡</span>
-          Explicar
+          <span id="btn-explain-text">Explicar</span>
         </button>
       </div>
 
       <div class="status" id="status">
         <span class="status-icon">✓</span>
-        <span class="status-text">Listo</span>
+        <span class="status-text" id="status-text">Listo</span>
       </div>
 
       <div class="result-container" id="result-container">
@@ -35,21 +42,21 @@
 
       <div class="error-container hidden" id="error-container">
         <div class="error-message" id="error-message"></div>
-        <button id="btn-config" class="btn btn-small hidden">Configurar API Key</button>
+        <button id="btn-config" class="btn btn-small hidden">Configurar</button>
       </div>
     </main>
 
     <footer class="footer">
-      <p class="privacy-note">
-        ⚠️ Al pulsar "Leer" o "Explicar", se envía una captura de la pestaña actual a OpenAI para su análisis.
+      <p class="privacy-note" id="privacy-note">
+        ⚠️ Al pulsar los botones, se envía una foto de la pantalla a OpenAI.
       </p>
-      <p class="tts-note">
-        🔊 La voz es generada por IA (OpenAI TTS).
+      <p class="tts-note" id="tts-note">
+        🔊 La voz es creada por inteligencia artificial.
       </p>
       <a href="#" id="link-options" class="options-link">⚙️ Opciones</a>
     </footer>
   </div>
 
-  <script src="popup.js"></script>
+  <script src="popup.js" type="module"></script>
 </body>
 </html>

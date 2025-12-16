@@ -20,7 +20,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('[Laguntzaile] Received message:', message.type);
 
   if (message.type === 'READ' || message.type === 'EXPLAIN') {
-    handleAnalyzeRequest(message.type.toLowerCase())
+    const language = message.language || 'es';
+    handleAnalyzeRequest(message.type.toLowerCase(), language)
       .then(sendResponse)
       .catch(error => {
         console.error('[Laguntzaile] Error handling request:', error);
@@ -45,10 +46,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 /**
  * Handle READ or EXPLAIN request
  * @param {string} mode - 'read' or 'explain'
+ * @param {string} language - Language code (es, en, eu)
  * @returns {Promise<object>} Result with success status and data
  */
-async function handleAnalyzeRequest(mode) {
-  console.log(`[Laguntzaile] Starting ${mode} request...`);
+async function handleAnalyzeRequest(mode, language = 'es') {
+  console.log(`[Laguntzaile] Starting ${mode} request in language: ${language}`);
 
   // Step 1: Check API key
   const apiKey = await getApiKey();
@@ -77,7 +79,7 @@ async function handleAnalyzeRequest(mode) {
 
   // Step 3: Analyze with vision
   console.log('[Laguntzaile] Analyzing with vision...');
-  const prompt = getPromptForMode(mode);
+  const prompt = getPromptForMode(mode, language);
   let analysisResult;
   try {
     analysisResult = await analyzeScreenshot(apiKey, prompt, screenshotDataUrl);
