@@ -17,10 +17,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return false;
   }
 
-  console.log('[Laguntzaile] Received message:', message.type);
+  console.log('[Laguntzaile] Received message:', message.type, 'language:', message.language);
 
   if (message.type === 'READ' || message.type === 'EXPLAIN') {
     const language = message.language || 'es';
+    console.log('[Laguntzaile] Using language:', language);
     handleAnalyzeRequest(message.type.toLowerCase(), language)
       .then(sendResponse)
       .catch(error => {
@@ -78,8 +79,9 @@ async function handleAnalyzeRequest(mode, language = 'es') {
   }
 
   // Step 3: Analyze with vision
-  console.log('[Laguntzaile] Analyzing with vision...');
+  console.log('[Laguntzaile] Analyzing with vision, mode:', mode, 'language:', language);
   const prompt = getPromptForMode(mode, language);
+  console.log('[Laguntzaile] Prompt starts with:', prompt.substring(0, 100));
   let analysisResult;
   try {
     analysisResult = await analyzeScreenshot(apiKey, prompt, screenshotDataUrl);

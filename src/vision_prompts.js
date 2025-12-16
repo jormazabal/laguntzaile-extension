@@ -251,6 +251,7 @@ La respuesta debe empezar con { y terminar con }. Sin explicaciones antes ni des
  * @returns {string} The prompt text
  */
 export function getPromptForMode(mode, lang = 'es') {
+  console.log('[Laguntzaile Prompts] getPromptForMode called with mode:', mode, 'lang:', lang);
   if (mode === 'read') {
     return getReadPrompt(lang);
   } else if (mode === 'explain') {
