@@ -22,9 +22,8 @@ const DEFAULT_MODELS = {
 export const AVAILABLE_MODELS = {
   vision: [
     { id: 'gpt-4o-mini', name: 'GPT-4o Mini', supportsReasoning: false },
-    { id: 'gpt-4.5-preview', name: 'GPT-4.5 Preview', supportsReasoning: false },
-    { id: 'o3-mini', name: 'o3-mini (Razonador)', supportsReasoning: true },
-    { id: 'o4-mini', name: 'o4-mini (Razonador)', supportsReasoning: true }
+    { id: 'gpt-5-nano', name: 'GPT-5 Nano', supportsReasoning: false },
+    { id: 'gpt-5-mini', name: 'GPT-5 Mini', supportsReasoning: true }
   ],
   tts: [
     { id: 'gpt-4o-mini-tts', name: 'GPT-4o Mini TTS' },
