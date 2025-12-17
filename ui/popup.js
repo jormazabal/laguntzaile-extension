@@ -16,7 +16,7 @@ const btnExplain = document.getElementById('btn-explain');
 const btnReadText = document.getElementById('btn-read-text');
 const btnExplainText = document.getElementById('btn-explain-text');
 const statusEl = document.getElementById('status');
-const statusIcon = statusEl.querySelector('.status-icon');
+const statusDot = statusEl.querySelector('.status-dot');
 const statusTextEl = document.getElementById('status-text');
 const resultContainer = document.getElementById('result-container');
 const resultText = document.getElementById('result-text');
@@ -179,7 +179,6 @@ function updateStatus(state, icon, text) {
   } else if (state === 'error') {
     statusEl.classList.add('error');
   }
-  statusIcon.textContent = icon;
   statusTextEl.textContent = text;
 }
 

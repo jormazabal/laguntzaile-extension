@@ -9,7 +9,7 @@ import { AVAILABLE_MODELS } from './storage.js';
 // Default models (fallbacks)
 const DEFAULT_VISION_MODEL = 'gpt-4o-mini';
 const DEFAULT_TTS_MODEL = 'gpt-4o-mini-tts';
-const DEFAULT_TTS_VOICE = 'coral';
+const DEFAULT_TTS_VOICE = 'nova';
 const REQUEST_TIMEOUT = 60000; // 60 seconds
 
 /**
@@ -36,7 +36,7 @@ export async function analyzeScreenshot(apiKey, prompt, imageDataUrl, modelSetti
   console.log(`[Laguntzaile] Calling OpenAI vision API with model: ${visionModel}`);
   
   // Build request body - reasoning models need more tokens for thinking + output
-  const maxTokens = supportsReasoning ? 16000 : 2000;
+  const maxTokens = supportsReasoning ? 200000 : 2000;
   
   const requestBody = {
     model: visionModel,
