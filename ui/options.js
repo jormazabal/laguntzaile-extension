@@ -19,7 +19,6 @@ const messageEl = document.getElementById('message');
 const visionModelSelect = document.getElementById('vision-model');
 const reasoningGroup = document.getElementById('reasoning-group');
 const reasoningEffortSelect = document.getElementById('reasoning-effort');
-const ttsModelSelect = document.getElementById('tts-model');
 const btnSaveModels = document.getElementById('btn-save-models');
 const modelsMessageEl = document.getElementById('models-message');
 
@@ -60,14 +59,6 @@ function populateModelSelects() {
     option.value = model.id;
     option.textContent = model.name;
     visionModelSelect.appendChild(option);
-  });
-
-  // TTS models
-  AVAILABLE_MODELS.tts.forEach(model => {
-    const option = document.createElement('option');
-    option.value = model.id;
-    option.textContent = model.name;
-    ttsModelSelect.appendChild(option);
   });
 
   // Reasoning effort levels
@@ -179,11 +170,6 @@ async function loadModelSettings() {
       visionModelSelect.value = settings.vision;
     }
     
-    // Set TTS model
-    if (settings.tts) {
-      ttsModelSelect.value = settings.tts;
-    }
-    
     // Set reasoning effort
     if (settings.reasoningEffort) {
       reasoningEffortSelect.value = settings.reasoningEffort;
@@ -202,7 +188,6 @@ async function loadModelSettings() {
 async function saveModelSettings() {
   const settings = {
     vision: visionModelSelect.value,
-    tts: ttsModelSelect.value,
     reasoningEffort: reasoningEffortSelect.value
   };
 

@@ -226,14 +226,15 @@ function tryParseJSON(text) {
  * Generate TTS audio using OpenAI
  * @param {string} apiKey - OpenAI API key
  * @param {string} text - Text to convert to speech
- * @param {object} modelSettings - Model configuration {tts, ttsVoice}
+ * @param {string} language - Language code (es, en, eu)
  * @returns {Promise<ArrayBuffer>} MP3 audio data
  */
-export async function generateTTS(apiKey, text, modelSettings = {}) {
-  const ttsModel = modelSettings.tts || DEFAULT_TTS_MODEL;
-  const ttsVoice = modelSettings.ttsVoice || DEFAULT_TTS_VOICE;
+export async function generateTTS(apiKey, text, language = 'es') {
+  const ttsModel = AVAILABLE_MODELS.tts;
+  const ttsVoice = DEFAULT_TTS_VOICE;
+  const instructions = AVAILABLE_MODELS.ttsInstructions[language] || AVAILABLE_MODELS.ttsInstructions.es;
   
-  console.log(`[Laguntzaile] Calling OpenAI TTS API with model: ${ttsModel}`);
+  console.log(`[Laguntzaile] Calling OpenAI TTS API with model: ${ttsModel}, language: ${language}`);
   
   const response = await fetchWithTimeout('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
@@ -245,6 +246,7 @@ export async function generateTTS(apiKey, text, modelSettings = {}) {
       model: ttsModel,
       voice: ttsVoice,
       input: text,
+      instructions: instructions,
       response_format: 'mp3'
     })
   }, REQUEST_TIMEOUT);

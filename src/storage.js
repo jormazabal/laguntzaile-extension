@@ -22,14 +22,15 @@ const DEFAULT_MODELS = {
 export const AVAILABLE_MODELS = {
   vision: [
     { id: 'gpt-4o-mini', name: 'GPT-4o Mini', supportsReasoning: false },
-    { id: 'gpt-5-nano', name: 'GPT-5 Nano', supportsReasoning: false },
+    { id: 'gpt-5-nano', name: 'GPT-5 Nano', supportsReasoning: true },
     { id: 'gpt-5-mini', name: 'GPT-5 Mini', supportsReasoning: true }
   ],
-  tts: [
-    { id: 'gpt-4o-mini-tts', name: 'GPT-4o Mini TTS' },
-    { id: 'tts-1', name: 'TTS-1' },
-    { id: 'tts-1-hd', name: 'TTS-1 HD' }
-  ],
+  tts: 'gpt-4o-mini-tts-2025-12-17',
+  ttsInstructions: {
+    es: 'Speak in a kind and emotional tone, with a Spanish (Spain) accent.',
+    eu: 'Speak in a kind and emotional tone, with a Basque accent.',
+    en: 'Speak in a kind and emotional tone, with a British (England) accent.'
+  },
   reasoningEffort: [
     { id: 'low', name: 'Bajo' },
     { id: 'medium', name: 'Medio' },

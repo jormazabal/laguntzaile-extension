@@ -120,7 +120,7 @@ async function handleAnalyzeRequest(mode, language = 'es') {
   console.log('[Laguntzaile] Generating TTS for text length:', textForTTS.length);
   let audioData;
   try {
-    audioData = await generateTTS(apiKey, textForTTS, modelSettings);
+    audioData = await generateTTS(apiKey, textForTTS, language);
     console.log('[Laguntzaile] TTS audio generated, size:', audioData.byteLength);
   } catch (error) {
     console.error('[Laguntzaile] TTS generation failed:', error);
