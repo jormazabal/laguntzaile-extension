@@ -22,6 +22,7 @@
 
 html, body {
   width: 220px;
+  min-height: 200px;
 }
 
 body {
