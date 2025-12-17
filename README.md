@@ -157,6 +157,35 @@ El audio generado utiliza **OpenAI TTS** (Text-to-Speech). La voz es **sintétic
   - `chrome.storage.local` - Almacenamiento local
   - `chrome.offscreen` - Reproducción de audio en background
 
+## 🌐 Publicación en tiendas
+
+### Preparar para Chrome Web Store / Edge Add-ons
+
+1. **Activar GitHub Pages** para la política de privacidad:
+   - Ir a Settings → Pages en tu repositorio
+   - Source: "Deploy from a branch"
+   - Branch: `main`, carpeta `/docs`
+   - Guardar y esperar a que se despliegue
+   - La URL será: `https://[tu-usuario].github.io/laguntzaile-extension/privacy.html`
+
+2. **Actualizar contacto**:
+   - Editar `docs/privacy.html` y cambiar `contacto@ejemplo.com` por tu email real
+
+3. **Crear el ZIP**:
+   - Excluir: `.git/`, `scripts/`, `README.md`, `STORE_SUBMISSION_NOTES.md`
+   - Incluir: `manifest.json`, `src/`, `ui/`, `offscreen/`, `assets/`, `docs/`
+
+4. **Subir a las tiendas**:
+   - Chrome: [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+   - Edge: [Microsoft Partner Center](https://partner.microsoft.com/dashboard/microsoftedge)
+
+5. **Notas para revisión**: Ver `STORE_SUBMISSION_NOTES.md` para textos de justificación de permisos y respuestas a preguntas de privacidad.
+
+### Documentación
+
+- [Política de Privacidad](./docs/privacy.html)
+- [Notas de Envío a Tiendas](./STORE_SUBMISSION_NOTES.md)
+
 ## 📄 Licencia
 
 Este proyecto es de uso personal/educativo.
