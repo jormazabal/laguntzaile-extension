@@ -39,19 +39,42 @@ body {
 .header {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  padding: 20px;
+  padding: 16px 20px;
   border-radius: 12px;
   margin-bottom: 20px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .header h1 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.lang-selector select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s;
+}
+
+.lang-selector select:hover {
+  border-color: var(--primary);
+}
+
+.lang-selector select option {
+  background: var(--bg-card);
 }
 
 /* Main */

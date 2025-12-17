@@ -9,15 +9,22 @@
 <body>
   <div class="container">
     <header class="header">
-      <h1>⚙️ Opciones de Laguntzaile</h1>
+      <h1 id="options-title">⚙️ Opciones de Laguntzaile</h1>
+      <div class="lang-selector">
+        <select id="lang-select" aria-label="Idioma">
+          <option value="es">ES</option>
+          <option value="en">EN</option>
+          <option value="eu">EU</option>
+        </select>
+      </div>
     </header>
 
     <main class="main">
       <section class="section">
-        <h2>Configuración de API</h2>
+        <h2 id="section-api">Configuración de API</h2>
         
         <div class="form-group">
-          <label for="api-key">OpenAI API Key</label>
+          <label for="api-key" id="label-api-key">OpenAI API Key</label>
           <div class="input-wrapper">
             <input 
               type="password" 
@@ -30,8 +37,8 @@
             </button>
           </div>
           <p class="help-text">
-            Necesitas una API Key de OpenAI para usar esta extensión. 
-            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">Obtener API Key</a>
+            <span id="help-api-key">Necesitas una API Key de OpenAI para usar esta extensión.</span>
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" id="link-get-api-key">Obtener API Key</a>
           </p>
         </div>
 
@@ -44,24 +51,22 @@
       </section>
 
       <section class="section">
-        <h2>Modelos de IA</h2>
+        <h2 id="section-models">Modelos de IA</h2>
         
         <div class="form-group">
-          <label for="vision-model">Modelo de Análisis (Visión + Texto)</label>
+          <label for="vision-model" id="label-vision-model">Modelo de Análisis (Visión + Texto)</label>
           <select id="vision-model" class="select-input">
-            <!-- Populated dynamically from storage.js -->
           </select>
-          <p class="help-text">
+          <p class="help-text" id="help-vision-model">
             Modelo usado para analizar la imagen y generar el texto.
           </p>
         </div>
 
         <div class="form-group" id="reasoning-group" style="display: none;">
-          <label for="reasoning-effort">Nivel de Razonamiento</label>
+          <label for="reasoning-effort" id="label-reasoning">Nivel de Razonamiento</label>
           <select id="reasoning-effort" class="select-input">
-            <!-- Populated dynamically from storage.js -->
           </select>
-          <p class="help-text">
+          <p class="help-text" id="help-reasoning">
             Solo para modelos razonadores. Mayor nivel = más tiempo pero mejor análisis.
           </p>
         </div>
@@ -74,33 +79,33 @@
       </section>
 
       <section class="section">
-        <h2>Información</h2>
+        <h2 id="section-info">Información</h2>
         
         <div class="info-box">
-          <h3>🔒 Privacidad</h3>
-          <p>
+          <h3 id="info-privacy-title">🔒 Privacidad</h3>
+          <p id="info-privacy-1">
             Tu API Key se guarda localmente en tu navegador y nunca se envía a ningún servidor excepto OpenAI.
           </p>
-          <p>
+          <p id="info-privacy-2">
             Cuando usas "Leer" o "Explicar", se envía una captura de la pestaña visible a la API de OpenAI para su análisis.
           </p>
         </div>
 
         <div class="info-box">
-          <h3>🔊 Voz generada por IA</h3>
-          <p>
+          <h3 id="info-voice-title">🔊 Voz generada por IA</h3>
+          <p id="info-voice">
             El audio de lectura es generado mediante OpenAI TTS (Text-to-Speech). 
             La voz no es humana, es sintética generada por inteligencia artificial.
           </p>
         </div>
 
         <div class="info-box">
-          <h3>💡 Cómo usar</h3>
+          <h3 id="info-howto-title">💡 Cómo usar</h3>
           <ol>
-            <li>Navega a una página con un ejercicio o contenido educativo</li>
-            <li>Haz clic en el icono de Laguntzaile</li>
-            <li><strong>Leer:</strong> Lee en voz alta el texto seleccionado o el enunciado principal</li>
-            <li><strong>Explicar:</strong> Genera una explicación sencilla y la lee en voz alta</li>
+            <li id="info-howto-1">Navega a una página con un ejercicio o contenido educativo</li>
+            <li id="info-howto-2">Haz clic en el icono de Laguntzaile</li>
+            <li><strong id="info-howto-3-read">Leer:</strong> <span id="info-howto-3-desc">Lee en voz alta el texto seleccionado o el enunciado principal</span></li>
+            <li><strong id="info-howto-4-explain">Explicar:</strong> <span id="info-howto-4-desc">Genera una explicación sencilla y la lee en voz alta</span></li>
           </ol>
         </div>
       </section>

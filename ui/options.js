@@ -1,14 +1,17 @@
 /**
  * Options page script for Laguntzaile extension
- * Handles API key and model configuration
+ * Handles API key, model configuration, and language settings
  */
 
 import { AVAILABLE_MODELS } from '../src/storage.js';
+import { translations, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '../src/i18n.js';
 
 const STORAGE_KEY = 'laguntzaile_apikey';
 const MODELS_KEY = 'laguntzaile_models';
+const LANG_STORAGE_KEY = 'laguntzaile_lang';
 
 // DOM elements
+const langSelect = document.getElementById('lang-select');
 const apiKeyInput = document.getElementById('api-key');
 const toggleVisibility = document.getElementById('toggle-visibility');
 const btnSave = document.getElementById('btn-save');
@@ -24,15 +27,22 @@ const modelsMessageEl = document.getElementById('models-message');
 
 // State
 let isPasswordVisible = false;
+let currentLang = DEFAULT_LANGUAGE;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
+  // Load language first
+  await loadLanguage();
+  
   // Populate model selects from configuration
   populateModelSelects();
   
   // Load existing settings
   await loadApiKey();
   await loadModelSettings();
+
+  // Language event listener
+  langSelect.addEventListener('change', handleLanguageChange);
 
   // API Key event listeners
   toggleVisibility.addEventListener('click', togglePasswordVisibility);
@@ -48,6 +58,89 @@ document.addEventListener('DOMContentLoaded', async () => {
   visionModelSelect.addEventListener('change', onVisionModelChange);
   btnSaveModels.addEventListener('click', saveModelSettings);
 });
+
+/**
+ * Load saved language preference
+ */
+async function loadLanguage() {
+  try {
+    const result = await chrome.storage.local.get(LANG_STORAGE_KEY);
+    const savedLang = result[LANG_STORAGE_KEY];
+    if (savedLang && SUPPORTED_LANGUAGES.includes(savedLang)) {
+      currentLang = savedLang;
+    }
+  } catch (error) {
+    console.warn('[Laguntzaile Options] Could not load language:', error);
+  }
+  
+  langSelect.value = currentLang;
+  applyTranslations();
+}
+
+/**
+ * Handle language change
+ */
+async function handleLanguageChange() {
+  currentLang = langSelect.value;
+  
+  try {
+    await chrome.storage.local.set({ [LANG_STORAGE_KEY]: currentLang });
+  } catch (error) {
+    console.warn('[Laguntzaile Options] Could not save language:', error);
+  }
+  
+  applyTranslations();
+}
+
+/**
+ * Get translation for current language
+ */
+function t(key) {
+  const langData = translations[currentLang] || translations[DEFAULT_LANGUAGE];
+  return langData[key] || key;
+}
+
+/**
+ * Apply translations to all UI elements
+ */
+function applyTranslations() {
+  // Title
+  document.getElementById('options-title').textContent = t('optionsTitle');
+  
+  // API section
+  document.getElementById('section-api').textContent = t('sectionApi');
+  document.getElementById('label-api-key').textContent = t('labelApiKey');
+  document.getElementById('help-api-key').textContent = t('helpApiKey') + ' ';
+  document.getElementById('link-get-api-key').textContent = t('linkGetApiKey');
+  btnSave.textContent = t('btnSave');
+  btnClear.textContent = t('btnDelete');
+  
+  // Models section
+  document.getElementById('section-models').textContent = t('sectionModels');
+  document.getElementById('label-vision-model').textContent = t('labelVisionModel');
+  document.getElementById('help-vision-model').textContent = t('helpVisionModel');
+  document.getElementById('label-reasoning').textContent = t('labelReasoning');
+  document.getElementById('help-reasoning').textContent = t('helpReasoning');
+  btnSaveModels.textContent = t('btnSaveModels');
+  
+  // Info section
+  document.getElementById('section-info').textContent = t('sectionInfo');
+  document.getElementById('info-privacy-title').textContent = t('infoPrivacyTitle');
+  document.getElementById('info-privacy-1').textContent = t('infoPrivacy1');
+  document.getElementById('info-privacy-2').textContent = t('infoPrivacy2');
+  document.getElementById('info-voice-title').textContent = t('infoVoiceTitle');
+  document.getElementById('info-voice').textContent = t('infoVoice');
+  document.getElementById('info-howto-title').textContent = t('infoHowToTitle');
+  document.getElementById('info-howto-1').textContent = t('infoHowTo1');
+  document.getElementById('info-howto-2').textContent = t('infoHowTo2');
+  document.getElementById('info-howto-3-read').textContent = t('infoHowTo3Read');
+  document.getElementById('info-howto-3-desc').textContent = t('infoHowTo3ReadDesc');
+  document.getElementById('info-howto-4-explain').textContent = t('infoHowTo4Explain');
+  document.getElementById('info-howto-4-desc').textContent = t('infoHowTo4ExplainDesc');
+  
+  // Update document language
+  document.documentElement.lang = currentLang;
+}
 
 /**
  * Populate model select elements from AVAILABLE_MODELS configuration
