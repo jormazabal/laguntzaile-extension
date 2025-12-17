@@ -8,6 +8,21 @@
 </head>
 <body>
   <div class="container">
+    <!-- Consent Modal (shown on first use) -->
+    <div class="consent-modal hidden" id="consent-modal">
+      <div class="consent-content">
+        <h2 id="consent-title">Consentimiento requerido</h2>
+        <p id="consent-text">Al usar Leer o Explicar, se enviará una captura de la pestaña visible a OpenAI para generar texto y audio. La captura puede contener datos personales visibles en pantalla.</p>
+        <p class="consent-link-wrapper">
+          <a href="../docs/privacy.html" target="_blank" id="consent-privacy-link">Ver política de privacidad</a>
+        </p>
+        <div class="consent-buttons">
+          <button id="btn-consent-accept" class="btn-consent btn-consent--accept">Aceptar y continuar</button>
+          <button id="btn-consent-cancel" class="btn-consent btn-consent--cancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
     <main class="main">
       <div class="action-buttons">
         <button id="btn-read" class="action-btn action-btn--read" title="Leer">
@@ -34,6 +49,12 @@
             <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"></path>
           </svg>
         </button>
+      </div>
+
+      <!-- Disclosure notice (always visible) -->
+      <div class="disclosure" id="disclosure">
+        <span id="disclosure-text">📸 Captura enviada a OpenAI</span>
+        <a href="../docs/privacy.html" target="_blank" id="disclosure-link">Privacidad</a>
       </div>
 
       <div class="error-container hidden" id="error-container">

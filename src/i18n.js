@@ -77,7 +77,18 @@ export const translations = {
     infoHowTo3Read: 'Leer:',
     infoHowTo3ReadDesc: 'Lee en voz alta el texto seleccionado o el enunciado principal',
     infoHowTo4Explain: 'Explicar:',
-    infoHowTo4ExplainDesc: 'Genera una explicación sencilla y la lee en voz alta'
+    infoHowTo4ExplainDesc: 'Genera una explicación sencilla y la lee en voz alta',
+    
+    // Consent
+    consentTitle: 'Consentimiento requerido',
+    consentText: 'Al usar Leer o Explicar, se enviará una captura de la pestaña visible a OpenAI para generar texto y audio. La captura puede contener datos personales visibles en pantalla.',
+    consentPrivacyLink: 'Ver política de privacidad',
+    consentAccept: 'Aceptar y continuar',
+    consentCancel: 'Cancelar',
+    disclosureText: '📸 Captura enviada a OpenAI',
+    disclosureLink: 'Privacidad',
+    revokeConsent: 'Revocar consentimiento',
+    privacyPolicy: 'Política de privacidad'
   },
   
   en: {
@@ -149,7 +160,18 @@ export const translations = {
     infoHowTo3Read: 'Read:',
     infoHowTo3ReadDesc: 'Reads aloud the selected text or main statement',
     infoHowTo4Explain: 'Explain:',
-    infoHowTo4ExplainDesc: 'Generates a simple explanation and reads it aloud'
+    infoHowTo4ExplainDesc: 'Generates a simple explanation and reads it aloud',
+    
+    // Consent
+    consentTitle: 'Consent required',
+    consentText: 'When using Read or Explain, a screenshot of the visible tab will be sent to OpenAI to generate text and audio. The screenshot may contain personal data visible on screen.',
+    consentPrivacyLink: 'View privacy policy',
+    consentAccept: 'Accept and continue',
+    consentCancel: 'Cancel',
+    disclosureText: '📸 Screenshot sent to OpenAI',
+    disclosureLink: 'Privacy',
+    revokeConsent: 'Revoke consent',
+    privacyPolicy: 'Privacy policy'
   },
   
   eu: {
@@ -221,7 +243,18 @@ export const translations = {
     infoHowTo3Read: 'Irakurri:',
     infoHowTo3ReadDesc: 'Hautatutako testua edo enuntziatu nagusia ozen irakurtzen du',
     infoHowTo4Explain: 'Azaldu:',
-    infoHowTo4ExplainDesc: 'Azalpen sinple bat sortzen du eta ozen irakurtzen du'
+    infoHowTo4ExplainDesc: 'Azalpen sinple bat sortzen du eta ozen irakurtzen du',
+    
+    // Consent
+    consentTitle: 'Baimena behar da',
+    consentText: 'Irakurri edo Azaldu erabiltzean, ikusgai dagoen fitxaren pantaila-argazkia OpenAI-ra bidaliko da testua eta audioa sortzeko. Pantaila-argazkiak datu pertsonalak izan ditzake.',
+    consentPrivacyLink: 'Ikusi pribatutasun politika',
+    consentAccept: 'Onartu eta jarraitu',
+    consentCancel: 'Utzi',
+    disclosureText: '📸 Argazkia OpenAI-ra bidalia',
+    disclosureLink: 'Pribatutasuna',
+    revokeConsent: 'Baimena kendu',
+    privacyPolicy: 'Pribatutasun politika'
   }
 };
 
