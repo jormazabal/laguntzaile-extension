@@ -77,12 +77,12 @@ export async function analyzeScreenshot(apiKey, prompt, imageDataUrl, modelSetti
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('[Laguntzaile] Vision API error:', response.status, errorText);
+    console.error('[Laguntzaile] Vision API error:', response.status);
     throw new OpenAIError(response.status, errorText);
   }
 
   const data = await response.json();
-  console.log('[Laguntzaile] Vision API response received');
+  console.log('[Laguntzaile] Vision API response received, status:', data.status || 'ok');
   
   // Extract the text content from the response
   const outputText = extractResponseText(data);
@@ -200,7 +200,7 @@ function extractResponseText(data) {
     return data.choices[0].message.content;
   }
   
-  console.error('[Laguntzaile] Unexpected response structure:', JSON.stringify(data).substring(0, 500));
+  console.error('[Laguntzaile] Unexpected response structure');
   throw new Error('Estructura de respuesta inesperada de OpenAI');
 }
 
@@ -269,7 +269,7 @@ export async function generateTTS(apiKey, text, language = 'es') {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('[Laguntzaile] TTS API error:', response.status, errorText);
+    console.error('[Laguntzaile] TTS API error:', response.status);
     throw new OpenAIError(response.status, errorText);
   }
 

@@ -68,13 +68,13 @@ async function handleAnalyzeRequest(mode, language = 'es') {
   console.log('[Laguntzaile] Using models:', modelSettings.vision, modelSettings.tts);
 
   // Step 2: Capture full page screenshot
-  console.log('[Laguntzaile] Capturing full page screenshot...');
+  console.log('[Laguntzaile] Capturing screenshot...');
   let screenshotDataUrl;
   try {
     screenshotDataUrl = await captureFullPage();
-    console.log('[Laguntzaile] Screenshot captured, size:', screenshotDataUrl.length);
+    console.log('[Laguntzaile] Screenshot captured');
   } catch (error) {
-    console.error('[Laguntzaile] Screenshot capture failed:', error);
+    console.error('[Laguntzaile] Screenshot capture failed');
     return {
       success: false,
       error: 'No se pudo capturar la pantalla. Asegúrate de estar en una pestaña válida.'
@@ -87,9 +87,9 @@ async function handleAnalyzeRequest(mode, language = 'es') {
   let analysisResult;
   try {
     analysisResult = await analyzeScreenshot(apiKey, prompt, screenshotDataUrl, modelSettings);
-    console.log('[Laguntzaile] Analysis result:', analysisResult);
+    console.log('[Laguntzaile] Analysis completed');
   } catch (error) {
-    console.error('[Laguntzaile] Vision analysis failed:', error);
+    console.error('[Laguntzaile] Vision analysis failed');
     return {
       success: false,
       error: error.message || 'Error al analizar la imagen'
@@ -117,13 +117,13 @@ async function handleAnalyzeRequest(mode, language = 'es') {
   }
 
   // Step 5: Generate TTS
-  console.log('[Laguntzaile] Generating TTS for text length:', textForTTS.length);
+  console.log('[Laguntzaile] Generating TTS...');
   let audioData;
   try {
     audioData = await generateTTS(apiKey, textForTTS, language);
-    console.log('[Laguntzaile] TTS audio generated, size:', audioData.byteLength);
+    console.log('[Laguntzaile] TTS audio generated');
   } catch (error) {
-    console.error('[Laguntzaile] TTS generation failed:', error);
+    console.error('[Laguntzaile] TTS generation failed');
     return {
       success: false,
       error: error.message || 'Error al generar audio'
@@ -136,7 +136,7 @@ async function handleAnalyzeRequest(mode, language = 'es') {
     await playAudioInOffscreen(audioData);
     console.log('[Laguntzaile] Audio playback started');
   } catch (error) {
-    console.error('[Laguntzaile] Audio playback failed:', error);
+    console.error('[Laguntzaile] Audio playback failed');
     // Don't fail the whole request if audio fails
     // The text result is still valuable
   }
