@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Laguntzaile",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Asistente personal para leer y explicar ejercicios usando IA de visión y voz.",
   "minimum_chrome_version": "109",
   "icons": {
@@ -30,5 +30,8 @@
     "storage",
     "offscreen",
     "scripting"
+  ],
+  "host_permissions": [
+    "https://api.openai.com/*"
   ]
 }
