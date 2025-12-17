@@ -25,7 +25,7 @@ export const AVAILABLE_MODELS = {
     { id: 'gpt-5-nano', name: 'GPT-5 Nano', supportsReasoning: true },
     { id: 'gpt-5-mini', name: 'GPT-5 Mini', supportsReasoning: true }
   ],
-  tts: 'gpt-4o-mini-tts-2025-12-17',
+  tts: 'gpt-4o-mini-tts-2025-12-15',
   ttsInstructions: {
     es: 'Speak in a kind and emotional tone, with a Spanish (Spain) accent.',
     eu: 'Speak in a kind and emotional tone, with a Basque accent.',

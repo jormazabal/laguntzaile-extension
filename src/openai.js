@@ -39,6 +39,7 @@ export async function analyzeScreenshot(apiKey, prompt, imageDataUrl, modelSetti
   const requestBody = {
     model: visionModel,
     store: false,
+    max_output_tokens: 2000,
     input: [
       {
         role: 'user',
