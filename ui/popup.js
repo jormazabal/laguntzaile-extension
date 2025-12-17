@@ -13,19 +13,12 @@ const LANG_STORAGE_KEY = 'laguntzaile_lang';
 const langSelect = document.getElementById('lang-select');
 const btnRead = document.getElementById('btn-read');
 const btnExplain = document.getElementById('btn-explain');
-const btnReadText = document.getElementById('btn-read-text');
-const btnExplainText = document.getElementById('btn-explain-text');
 const statusEl = document.getElementById('status');
-const statusDot = statusEl.querySelector('.status-dot');
 const statusTextEl = document.getElementById('status-text');
-const resultContainer = document.getElementById('result-container');
-const resultText = document.getElementById('result-text');
 const errorContainer = document.getElementById('error-container');
 const errorMessage = document.getElementById('error-message');
 const btnConfig = document.getElementById('btn-config');
 const linkOptions = document.getElementById('link-options');
-const privacyNote = document.getElementById('privacy-note');
-const ttsNote = document.getElementById('tts-note');
 
 // State
 let isProcessing = false;
@@ -87,13 +80,10 @@ async function handleLanguageChange() {
 function applyTranslations() {
   const t = translations[currentLang] || translations[DEFAULT_LANGUAGE];
   
-  // Update UI texts
-  btnReadText.textContent = t.btnRead;
-  btnExplainText.textContent = t.btnExplain;
+  // Update button tooltips
+  btnRead.title = t.btnRead;
+  btnExplain.title = t.btnExplain;
   btnConfig.textContent = t.btnConfigure;
-  linkOptions.textContent = '⚙️ ' + t.linkOptions;
-  privacyNote.textContent = t.privacyNote;
-  ttsNote.textContent = t.ttsNote;
   
   // Update status if not processing
   if (!isProcessing) {
@@ -122,7 +112,6 @@ async function handleAction(type) {
   isProcessing = true;
   setButtonsEnabled(false);
   hideError();
-  hideResult();
 
   try {
     // Step 1: Capturing
@@ -151,9 +140,8 @@ async function handleAction(type) {
       return;
     }
 
-    // Step 3: Show result
+    // Step 3: Audio playing
     updateStatus('loading', '🔊', t('statusGeneratingAudio'));
-    showResult(response.displayText);
     
     // Success
     await delay(500);
@@ -180,22 +168,6 @@ function updateStatus(state, icon, text) {
     statusEl.classList.add('error');
   }
   statusTextEl.textContent = text;
-}
-
-/**
- * Show result text
- */
-function showResult(text) {
-  resultText.textContent = text;
-  resultContainer.classList.add('visible');
-}
-
-/**
- * Hide result
- */
-function hideResult() {
-  resultContainer.classList.remove('visible');
-  resultText.textContent = '';
 }
 
 /**
