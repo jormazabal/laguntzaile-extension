@@ -9,6 +9,7 @@ import { translations, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '../src/i18n
 const STORAGE_KEY = 'laguntzaile_apikey';
 const MODELS_KEY = 'laguntzaile_models';
 const LANG_STORAGE_KEY = 'laguntzaile_lang';
+const CONSENT_STORAGE_KEY = 'laguntzaile_consent';
 
 // DOM elements
 const langSelect = document.getElementById('lang-select');
@@ -24,6 +25,11 @@ const reasoningGroup = document.getElementById('reasoning-group');
 const reasoningEffortSelect = document.getElementById('reasoning-effort');
 const btnSaveModels = document.getElementById('btn-save-models');
 const modelsMessageEl = document.getElementById('models-message');
+
+// Consent DOM elements
+const btnRevokeConsent = document.getElementById('btn-revoke-consent');
+const consentMessageEl = document.getElementById('consent-message');
+const linkPrivacyPolicy = document.getElementById('link-privacy-policy');
 
 // State
 let isPasswordVisible = false;
@@ -57,6 +63,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Model event listeners
   visionModelSelect.addEventListener('change', onVisionModelChange);
   btnSaveModels.addEventListener('click', saveModelSettings);
+  
+  // Consent event listener
+  btnRevokeConsent.addEventListener('click', revokeConsent);
 });
 
 /**
@@ -137,6 +146,10 @@ function applyTranslations() {
   document.getElementById('info-howto-3-desc').textContent = t('infoHowTo3ReadDesc');
   document.getElementById('info-howto-4-explain').textContent = t('infoHowTo4Explain');
   document.getElementById('info-howto-4-desc').textContent = t('infoHowTo4ExplainDesc');
+  
+  // Privacy and consent
+  linkPrivacyPolicy.textContent = '📄 ' + (t('privacyPolicy') || 'Política de privacidad');
+  btnRevokeConsent.textContent = t('revokeConsent') || 'Revocar consentimiento';
   
   // Update document language
   document.documentElement.lang = currentLang;
@@ -301,4 +314,17 @@ function onVisionModelChange() {
   const modelConfig = AVAILABLE_MODELS.vision.find(m => m.id === selectedModel);
   const isReasoningModel = modelConfig?.supportsReasoning || false;
   reasoningGroup.style.display = isReasoningModel ? 'block' : 'none';
+}
+
+/**
+ * Revoke user consent
+ */
+async function revokeConsent() {
+  try {
+    await chrome.storage.local.remove(CONSENT_STORAGE_KEY);
+    showMessage(t('msgConsentRevoked') || '✓ Consentimiento revocado', 'success', consentMessageEl);
+  } catch (error) {
+    console.error('[Laguntzaile Options] Error revoking consent:', error);
+    showMessage('Error', 'error', consentMessageEl);
+  }
 }

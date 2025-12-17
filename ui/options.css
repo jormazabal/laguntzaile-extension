@@ -303,6 +303,33 @@ body {
   margin-bottom: 4px;
 }
 
+/* Privacy links */
+.privacy-links {
+  margin-bottom: 12px;
+}
+
+.privacy-links a {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.privacy-links a:hover {
+  text-decoration: underline;
+}
+
+.btn-secondary {
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  box-shadow: none;
+}
+
+.btn-secondary:hover {
+  background: var(--border);
+  color: var(--text);
+  box-shadow: none;
+}
+
 /* Footer */
 .footer {
   text-align: center;
