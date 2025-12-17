@@ -13,8 +13,6 @@ const LANG_STORAGE_KEY = 'laguntzaile_lang';
 const langSelect = document.getElementById('lang-select');
 const btnRead = document.getElementById('btn-read');
 const btnExplain = document.getElementById('btn-explain');
-const statusEl = document.getElementById('status');
-const statusTextEl = document.getElementById('status-text');
 const errorContainer = document.getElementById('error-container');
 const errorMessage = document.getElementById('error-message');
 const btnConfig = document.getElementById('btn-config');
@@ -85,10 +83,6 @@ function applyTranslations() {
   btnExplain.title = t.btnExplain;
   btnConfig.textContent = t.btnConfigure;
   
-  // Update status if not processing
-  if (!isProcessing) {
-    statusTextEl.textContent = t.statusReady;
-  }
   
   // Update document language
   document.documentElement.lang = currentLang;
@@ -114,12 +108,7 @@ async function handleAction(type) {
   hideError();
 
   try {
-    // Step 1: Capturing
-    updateStatus('loading', '📸', t('statusCapturing'));
-    await delay(100);
-
-    // Step 2: Send message to service worker with language
-    updateStatus('loading', '🔍', t('statusAnalyzing'));
+    // Send message to service worker with language
     
     const response = await chrome.runtime.sendMessage({ 
       type,
@@ -136,38 +125,16 @@ async function handleAction(type) {
       } else {
         showError(response.error || t('errorUnknown'));
       }
-      updateStatus('error', '❌', t('statusError'));
       return;
     }
-
-    // Step 3: Audio playing
-    updateStatus('loading', '🔊', t('statusGeneratingAudio'));
-    
-    // Success
-    await delay(500);
-    updateStatus('success', '✓', t('statusDone'));
 
   } catch (error) {
     console.error('[Laguntzaile Popup] Error:', error);
     showError(error.message || t('errorUnknown'));
-    updateStatus('error', '❌', t('statusError'));
   } finally {
     isProcessing = false;
     setButtonsEnabled(true);
   }
-}
-
-/**
- * Update status display
- */
-function updateStatus(state, icon, text) {
-  statusEl.className = 'status';
-  if (state === 'loading') {
-    statusEl.classList.add('loading');
-  } else if (state === 'error') {
-    statusEl.classList.add('error');
-  }
-  statusTextEl.textContent = text;
 }
 
 /**

@@ -130,44 +130,6 @@ body {
   transform: none !important;
 }
 
-/* Status */
-.status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 5px 8px;
-  background: var(--bg-card);
-  border-radius: 6px;
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-top: 8px;
-}
-
-.status-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--success);
-  flex-shrink: 0;
-}
-
-.status.loading {
-  color: var(--warning);
-}
-
-.status.loading .status-dot {
-  background: var(--warning);
-  animation: pulse 1s ease-in-out infinite;
-}
-
-.status.error {
-  color: var(--error);
-}
-
-.status.error .status-dot {
-  background: var(--error);
-}
 
 
 /* Error container */
