@@ -182,13 +182,14 @@ async function captureFullPage() {
     return captureVisibleTab();
   }
 
-  // Calculate number of captures needed
+  // Calculate number of captures needed - limit to max 2 to avoid rate limiting
   const captures = [];
-  const numCaptures = Math.ceil(scrollHeight / viewportHeight);
+  const maxCaptures = 2;
+  const numCaptures = Math.min(Math.ceil(scrollHeight / viewportHeight), maxCaptures);
   
-  console.log(`[Laguntzaile] Full page capture: ${numCaptures} screenshots needed`);
+  console.log(`[Laguntzaile] Full page capture: ${numCaptures} screenshots (limited)`);
 
-  // Capture each section
+  // Capture each section with delay to avoid rate limiting
   for (let i = 0; i < numCaptures; i++) {
     const scrollTo = i * viewportHeight;
     
@@ -199,8 +200,8 @@ async function captureFullPage() {
       args: [scrollTo]
     });
     
-    // Wait for scroll and render
-    await new Promise(r => setTimeout(r, 150));
+    // Wait for scroll, render, and rate limit (Chrome allows ~2 captures/sec)
+    await new Promise(r => setTimeout(r, 600));
     
     // Capture visible area
     const dataUrl = await captureVisibleTab();
@@ -208,7 +209,7 @@ async function captureFullPage() {
       dataUrl,
       y: scrollTo,
       isLast: i === numCaptures - 1,
-      overlap: i === numCaptures - 1 ? scrollHeight - scrollTo : viewportHeight
+      overlap: i === numCaptures - 1 ? Math.min(scrollHeight - scrollTo, viewportHeight) : viewportHeight
     });
   }
 
