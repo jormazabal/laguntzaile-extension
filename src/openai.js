@@ -35,11 +35,13 @@ export async function analyzeScreenshot(apiKey, prompt, imageDataUrl, modelSetti
   
   console.log(`[Laguntzaile] Calling OpenAI vision API with model: ${visionModel}`);
   
-  // Build request body
+  // Build request body - reasoning models need more tokens for thinking + output
+  const maxTokens = supportsReasoning ? 16000 : 2000;
+  
   const requestBody = {
     model: visionModel,
     store: false,
-    max_output_tokens: 2000,
+    max_output_tokens: maxTokens,
     input: [
       {
         role: 'user',
@@ -169,9 +171,16 @@ async function retryWithJsonFix(apiKey, originalPrompt, imageDataUrl, previousOu
  * Extract text from OpenAI Responses API response
  */
 function extractResponseText(data) {
+  // Check for incomplete response
+  if (data.status === 'incomplete') {
+    console.error('[Laguntzaile] Response incomplete:', data.incomplete_details);
+    throw new Error('La respuesta del modelo está incompleta. Intenta con un modelo más rápido.');
+  }
+  
   // The Responses API returns output in a different format
   if (data.output && Array.isArray(data.output)) {
     for (const item of data.output) {
+      // Standard message output
       if (item.type === 'message' && item.content) {
         for (const content of item.content) {
           if (content.type === 'output_text' && content.text) {
@@ -179,12 +188,18 @@ function extractResponseText(data) {
           }
         }
       }
+      // Direct text output (some models)
+      if (item.type === 'text' && item.text) {
+        return item.text;
+      }
     }
   }
+  
   // Fallback: try to find any text in the response
   if (data.choices && data.choices[0]?.message?.content) {
     return data.choices[0].message.content;
   }
+  
   console.error('[Laguntzaile] Unexpected response structure:', JSON.stringify(data).substring(0, 500));
   throw new Error('Estructura de respuesta inesperada de OpenAI');
 }
