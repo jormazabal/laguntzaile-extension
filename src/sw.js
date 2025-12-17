@@ -161,19 +161,33 @@ async function captureFullPage() {
     throw new Error('No se encontró pestaña activa');
   }
 
+  // Check if we can inject scripts (not possible on chrome://, edge://, about: pages)
+  const url = tab.url || '';
+  if (url.startsWith('chrome://') || url.startsWith('edge://') || url.startsWith('about:') || url.startsWith('chrome-extension://')) {
+    console.log('[Laguntzaile] Restricted page, using visible capture only');
+    return captureVisibleTab();
+  }
+
   // Get page dimensions via content script
-  const [{ result: pageInfo }] = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: () => ({
-      scrollHeight: document.documentElement.scrollHeight,
-      scrollWidth: document.documentElement.scrollWidth,
-      viewportHeight: window.innerHeight,
-      viewportWidth: window.innerWidth,
-      scrollX: window.scrollX,
-      scrollY: window.scrollY,
-      devicePixelRatio: window.devicePixelRatio || 1
-    })
-  });
+  let pageInfo;
+  try {
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => ({
+        scrollHeight: document.documentElement.scrollHeight,
+        scrollWidth: document.documentElement.scrollWidth,
+        viewportHeight: window.innerHeight,
+        viewportWidth: window.innerWidth,
+        scrollX: window.scrollX,
+        scrollY: window.scrollY,
+        devicePixelRatio: window.devicePixelRatio || 1
+      })
+    });
+    pageInfo = result;
+  } catch (error) {
+    console.warn('[Laguntzaile] Cannot inject script, using visible capture:', error.message);
+    return captureVisibleTab();
+  }
 
   const { scrollHeight, viewportHeight, scrollX, scrollY, devicePixelRatio } = pageInfo;
   
