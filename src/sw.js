@@ -67,11 +67,11 @@ async function handleAnalyzeRequest(mode, language = 'es') {
   const modelSettings = await getModelSettings();
   console.log('[Laguntzaile] Using models:', modelSettings.vision, modelSettings.tts);
 
-  // Step 2: Capture screenshot
-  console.log('[Laguntzaile] Capturing screenshot...');
+  // Step 2: Capture full page screenshot
+  console.log('[Laguntzaile] Capturing full page screenshot...');
   let screenshotDataUrl;
   try {
-    screenshotDataUrl = await captureVisibleTab();
+    screenshotDataUrl = await captureFullPage();
     console.log('[Laguntzaile] Screenshot captured, size:', screenshotDataUrl.length);
   } catch (error) {
     console.error('[Laguntzaile] Screenshot capture failed:', error);
@@ -151,6 +151,115 @@ async function handleAnalyzeRequest(mode, language = 'es') {
 }
 
 /**
+ * Capture the full page as a data URL using scrolling and stitching
+ * @returns {Promise<string>} Screenshot as data URL
+ */
+async function captureFullPage() {
+  // Get active tab
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) {
+    throw new Error('No se encontró pestaña activa');
+  }
+
+  // Get page dimensions via content script
+  const [{ result: pageInfo }] = await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: () => ({
+      scrollHeight: document.documentElement.scrollHeight,
+      scrollWidth: document.documentElement.scrollWidth,
+      viewportHeight: window.innerHeight,
+      viewportWidth: window.innerWidth,
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      devicePixelRatio: window.devicePixelRatio || 1
+    })
+  });
+
+  const { scrollHeight, viewportHeight, scrollX, scrollY, devicePixelRatio } = pageInfo;
+  
+  // If page fits in viewport, just capture visible
+  if (scrollHeight <= viewportHeight) {
+    return captureVisibleTab();
+  }
+
+  // Calculate number of captures needed
+  const captures = [];
+  const numCaptures = Math.ceil(scrollHeight / viewportHeight);
+  
+  console.log(`[Laguntzaile] Full page capture: ${numCaptures} screenshots needed`);
+
+  // Capture each section
+  for (let i = 0; i < numCaptures; i++) {
+    const scrollTo = i * viewportHeight;
+    
+    // Scroll to position
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (y) => window.scrollTo(0, y),
+      args: [scrollTo]
+    });
+    
+    // Wait for scroll and render
+    await new Promise(r => setTimeout(r, 150));
+    
+    // Capture visible area
+    const dataUrl = await captureVisibleTab();
+    captures.push({
+      dataUrl,
+      y: scrollTo,
+      isLast: i === numCaptures - 1,
+      overlap: i === numCaptures - 1 ? scrollHeight - scrollTo : viewportHeight
+    });
+  }
+
+  // Restore original scroll position
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: (x, y) => window.scrollTo(x, y),
+    args: [scrollX, scrollY]
+  });
+
+  // Stitch images together using offscreen document
+  const stitchedDataUrl = await stitchImages(captures, scrollHeight, pageInfo.viewportWidth, viewportHeight, devicePixelRatio);
+  
+  return stitchedDataUrl;
+}
+
+/**
+ * Stitch multiple screenshots into one using offscreen canvas
+ */
+async function stitchImages(captures, totalHeight, width, viewportHeight, dpr) {
+  // For simplicity, if only 2 captures, use offscreen; otherwise just use first capture
+  // This keeps API payload reasonable for OpenAI
+  if (captures.length > 3) {
+    console.log('[Laguntzaile] Too many captures, using first 3 sections only');
+    captures = captures.slice(0, 3);
+    totalHeight = viewportHeight * 3;
+  }
+
+  // Create offscreen document for canvas operations
+  await ensureOffscreenDocument();
+  
+  const response = await chrome.runtime.sendMessage({
+    target: 'offscreen',
+    action: 'stitch-images',
+    data: {
+      captures: captures.map(c => ({ dataUrl: c.dataUrl, y: c.y, overlap: c.overlap })),
+      totalHeight,
+      width: width * dpr,
+      viewportHeight: viewportHeight * dpr
+    }
+  });
+
+  if (!response?.success) {
+    console.warn('[Laguntzaile] Stitching failed, using first capture');
+    return captures[0].dataUrl;
+  }
+
+  return response.dataUrl;
+}
+
+/**
  * Capture the visible tab as a data URL
  * @returns {Promise<string>} Screenshot as data URL
  */
@@ -165,5 +274,24 @@ async function captureVisibleTab() {
         resolve(dataUrl);
       }
     });
+  });
+}
+
+/**
+ * Ensure offscreen document exists
+ */
+async function ensureOffscreenDocument() {
+  const existingContexts = await chrome.runtime.getContexts({
+    contextTypes: ['OFFSCREEN_DOCUMENT']
+  });
+  
+  if (existingContexts.length > 0) {
+    return;
+  }
+
+  await chrome.offscreen.createDocument({
+    url: 'offscreen/offscreen.html',
+    reasons: ['AUDIO_PLAYBACK', 'BLOBS'],
+    justification: 'Play TTS audio and stitch screenshots'
   });
 }
