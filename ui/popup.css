@@ -22,7 +22,6 @@
 
 html, body {
   width: 220px;
-  min-height: 280px;
 }
 
 body {
@@ -201,14 +200,14 @@ body {
 
 /* Consent Modal */
 .consent-modal {
-  position: fixed;
-  inset: 0;
+  position: relative;
   background: var(--bg);
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
+  padding: 16px 12px;
+  min-height: 280px;
 }
 
 .consent-modal.hidden {

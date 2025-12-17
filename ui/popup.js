@@ -146,17 +146,19 @@ async function checkConsent() {
 }
 
 /**
- * Show consent modal
+ * Show consent modal and hide main content
  */
 function showConsentModal() {
   consentModal.classList.remove('hidden');
+  document.querySelector('.main').classList.add('hidden');
 }
 
 /**
- * Hide consent modal
+ * Hide consent modal and show main content
  */
 function hideConsentModal() {
   consentModal.classList.add('hidden');
+  document.querySelector('.main').classList.remove('hidden');
 }
 
 /**
